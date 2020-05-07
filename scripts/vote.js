@@ -13,8 +13,18 @@ module.exports = {
         if(data.required_posting_auths != json.voter){
           console.log('Account is not the same as voter!')
         } else{
-          insertIntoDatabase(data, json)
-          updateVoteCount(json)
+          var values = [json.voter, json.parent_id]
+          con.query('SELECT * FROM votes WHERE voter = ? AND parent_id = ?', values, (err, result) => {
+            if(err) console.log("Error checking duplicated votes! Error: "+err)
+            else {
+              if(result.length == '0'){
+                insertIntoDatabase(data, json)
+                updateVoteCount(json)
+              } else {
+                console.log('Duplicated vote from: '+json.voter)
+              }
+            }
+          })
         }
       }
     }
@@ -22,7 +32,7 @@ module.exports = {
     async function updateVoteCount(json){
       var {voter, time, parent_id} = json
       con.query('SELECT votes FROM posts WHERE id = ?', [parent_id], (err, result) => {
-        if(err) console.log("Error seleting votes! Error: "+err)
+        if(err) console.log("Error selecting votes! Error: "+err)
         else {
           let votes_old = result[0].votes
           let votes = votes_old + 1

@@ -1,0 +1,41 @@
+{
+  "name": "hivesharer",
+  "version": "1.0.0",
+  "description": "Hive Sharer - Blockchain Based Link Sharing Website",
+  "main": "server.js",
+  "directories": {
+    "test": "tests"
+  },
+  "dependencies": {
+    "@hiveio/hive-js": "^0.1.0",
+    "body-parser": "^1.19.0",
+    "ejs": "^3.0.2",
+    "express": "^4.17.1",
+    "link-preview-node": "^1.0.4",
+    "mysql": "^2.18.1"
+  },
+  "devDependencies": {
+    "nodemon": "^2.0.3"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node server.js",
+    "dev": "nodemon server.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/fbslo/sharer.git"
+  },
+  "keywords": [
+    "hive",
+    "link",
+    "sharing",
+    "share"
+  ],
+  "author": "fbslo",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/fbslo/sharer/issues"
+  },
+  "homepage": "https://github.com/fbslo/sharer#readme"
+}

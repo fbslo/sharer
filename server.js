@@ -12,8 +12,7 @@ app.use(express.static('public'));
 app.set('view engine', 'ejs');
 app.use(bodyParser.json()); // for parsing application/json
 
-//app.use('/', require('./routes/index.js'));
-//app.use('/profile', require('./routes/profile.js'));
+app.use('/', require('./routes/index.js'));
 
 hive.config.set('alternative_api_endpoints', ['https://api.hive.blog', 'https://anyx.io']);
 
@@ -21,3 +20,5 @@ var con = require('./database/database.js')
 var stream = require('./scripts/streamBlockchain.js')
 
 stream.streamBlockchain()
+
+app.listen(5000)

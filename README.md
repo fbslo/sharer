@@ -17,3 +17,6 @@ ID: 'vote-' + author + '-' + time + '-hivesharer'
 
 
 Comment: {"type": "comment", "author": "fbslo", "description": "My Personal website!", "time": "128126812", "parent_id": "fbslo-1588844637591-hivesharer"}
+
+
+https://freefrontend.com/css-cards/
