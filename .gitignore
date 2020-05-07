@@ -1,0 +1,4 @@
+json.js
+node_modules/
+database/db_config.json
+tests/
