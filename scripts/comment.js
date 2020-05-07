@@ -19,8 +19,25 @@ module.exports = {
           console.log('Account is not the same as commenter!')
         } else{
           insertIntoDatabase(data, json)
+          updateCommentCount(json)
         }
       }
+    }
+
+    async function updateCommentCount(json){
+      var {author, time, parent_id} = json
+      con.query('SELECT comments FROM posts WHERE id = ?', [parent_id], (err, result) => {
+        if(err) console.log("Error seleting comments! Error: "+err)
+        else {
+          let comments_old = result[0].comments
+          let comments = comments_old + 1
+          var values = [comments, parent_id]
+          con.query('UPDATE posts SET comments = ? WHERE id = ?;', values, (err2, result2) => {
+            if(err2) console.log("Error updating comments! Error: "+err2)
+            else if(result) console.log("Comments updated for "+parent_id)
+          })
+        }
+      })
     }
 
 

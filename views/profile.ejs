@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+  <head>
+    <meta charset="utf-8">
+    <title></title>
+    <link rel="stylesheet" href="/profile.css">
+    <script type="text/javascript" href="./javascript.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@9"></script>
+  </head>
+  <body>
+
+      <div class="wrapper">
+
+      <div class="profile-card js-profile-card">
+        <div class="profile-card__img">
+          <img src="<%= profile_image %>" alt="profile card">
+        </div>
+
+        <div class="profile-card__cnt js-profile-cnt">
+          <a href='https://hive.blog/@<%= username %>'><div class="profile-card__name"><%= name %></div></a>
+          <div class="profile-card__txt"><%= about %></div>
+          <div class="profile-card-loc">
+              <%= location %>
+          </div>
+
+          <div class="profile-card-inf">
+            <div class="profile-card-inf__item">
+              <div class="profile-card-inf__title"><%= post_count %></div>
+              <div class="profile-card-inf__txt">Posts</div>
+            </div>
+
+            <div class="profile-card-inf__item">
+              <div class="profile-card-inf__title"><%= followers %></div>
+              <div class="profile-card-inf__txt">Followers</div>
+            </div>
+
+            <div class="profile-card-inf__item">
+              <div class="profile-card-inf__title"><%= following %></div>
+              <div class="profile-card-inf__txt">Following</div>
+            </div>
+          </div>
+
+          <div class="profile-card-ctr">
+            <button class="profile-card__button button--orange" onClick='profileTip("<%- username %>")'>Tip</button>
+          </div>
+          <a href='/'>homepage</a>
+          <script>
+            function profileTip(username){
+              Swal.mixin({
+                input: 'text',
+                confirmButtonText: 'Next &rarr;',
+                showCancelButton: true,
+                progressSteps: ['1', '2']
+              }).queue([
+                {
+                  title: 'Amount',
+                  text: 'How much HIVE would you like to send?'
+                },
+                {
+                  title: 'Message',
+                  text: 'Say something nice!'
+                }
+                ]).then((result) => {
+                if (result.value) {
+                  var amount = parseFloat(result.value[0]).toFixed(3)
+                  var memo = result.value[1]
+                  hive_keychain.requestTransfer('', username, amount, memo, 'HIVE', function(response) {
+                    console.log(response);
+                  });
+                  Swal.fire({
+                    title: 'All done!',
+                    html: `
+                      Pay with Keychain for Hive:
+                      <pre><code>${amount} HIVE</code> to <code>${username}</code> with memo <br><code>${memo}</code>!</pre>
+                    `,
+                    confirmButtonText: 'Done!'
+                  })
+                }
+              })
+            }
+          </script>
+        </div>
+
+      </div>
+
+    </div>
+
+  </body>
+</html>

@@ -21,9 +21,9 @@ module.exports = {
     async function insertIntoDatabase(data, json){
       var {author, link, description, time, tags} = json
       var id = author + '-' + time + '-hivesharer'
-      var values = [[author, link, description, time, tags, id, 0]]
+      var values = [[author, link, description, time, tags, id, 0, 0]]
       try {
-        con.query('INSERT INTO posts (author, link, description, time, tags, id, votes) VALUES ?', [values], (err, result) => {
+        con.query('INSERT INTO posts (author, link, description, time, tags, id, votes, comments) VALUES ?', [values], (err, result) => {
           if(err) console.log("Error inserting post: "+err)
           else if (result) console.log('Post inserted! ID: '+id)
         })
