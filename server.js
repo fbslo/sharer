@@ -13,6 +13,8 @@ app.set('view engine', 'ejs');
 app.use(bodyParser.json()); // for parsing application/json
 
 app.use('/', require('./routes/index.js'));
+app.use('/api', require('./routes/api.js'));
+
 
 hive.config.set('alternative_api_endpoints', ['https://api.hive.blog', 'https://anyx.io']);
 
