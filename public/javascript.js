@@ -18,19 +18,21 @@ function start(){
     contentType: "application/json",
     dataType: 'json',
     success: function(result){
-      console.log("API result: " + JSON.stringify(result))
+      //console.log("API result: " + JSON.stringify(result))
       if(JSON.stringify(result) != '{"success":false}') {
         //sort array by time of creation, new on the top
         var sorted = result.sort((a,b)=> parseFloat(b.time) - parseFloat(a.time))
+        document.getElementById('display').innerHTML = ''
         for(i=0;i<result.length;i++){
           var {success, background_image, profile_image, time, link, author, id, title, description, votes, comments} = sorted[i]
+          let post_data = sorted[i]
           let date_raw = new Date(Number(time)) + ''
           let date = (date_raw.split('(')[0]).slice(3)
           var html = `<div class="plx-card silver">
             <div class="pxc-bg" style="background-image:url('${background_image}')"></div>
             <div class="pxc-avatar"><img src="${profile_image}" /></div>
             <div class="pxc-subcard">
-                <div class="pxc-title"><i class="fas fa-hand-holding-usd fa-border" onclick='tip("${link}", "${author}")'></i> <i class="fas fa-arrow-up fa-border" onclick=submitVote("${id}")></i> ${title}</div>
+                <div class="pxc-title"><i class="fas fa-hand-holding-usd fa-border" onclick='tip("${link}", "${author}")'></i> <i class="fas fa-arrow-up fa-border" onclick=submitVote("${id}")></i> <a class='underline' onclick='displayPost("${background_image}", "${profile_image}", "${date}", "${link}", "${author}", "${id}", "${title}", "${description}", "${votes}", "${comments}")'>${title}</a></div>
                 <div class="pxc-sub">${description}</div>
               <div class="bottom-row">
                 <a href='${link}' class='button1'>${link}</a>  &nbsp - ${votes} Votes - ${comments} Comments - ${date}
@@ -43,7 +45,105 @@ function start(){
       }
       else {
         alert('API Call failed, try again!')
+        console.log("API result: " + JSON.stringify(result))
       }
+    }
+  });
+}
+
+function displayPost(background_image, profile_image, date, link, author, id, title, description, votes, comments){
+console.log(id)
+  var modal = `<!-- The Modal -->
+      <div id="myModal" class="modal">
+        <!-- Modal content -->
+        <div class="modal-content">
+          <div class="modal-header">
+            <span class="close">&times;</span>
+            <h2>${title}</h2>
+          </div>
+          <div class="modal-body">
+            <p>${description}</p>
+          </div>
+          <div class="modal-footer">
+            <h3>${date} - ${votes} Votes <i class="fas fa-arrow-up fa-border" onclick=submitVote("${id}")></i> - ${comments} Comments <i class="fas fa-comment fa-border" onclick=comment("${id}")></i></h3>
+          </div>
+          <div id='comments'></div>
+        </div>
+      </div>`
+  document.getElementById('modal').innerHTML = modal
+
+  $.ajax({
+    url: '/api/comments?id='+id,
+    contentType: "application/json",
+    dataType: 'json',
+    success: function(result){
+      if(JSON.stringify(result) != '{"success":false}') {
+        for(i=0;i<result.length;i++){
+           comments += '<div class="modal-body">'+result[i].description+'</div>'
+        }
+        document.getElementById('comments').innerHTML = comments
+      } else {
+        alert('API call failed, cannot load comments / post has 0 comments!')
+      }
+    }
+  })
+
+  var modal = document.getElementById('myModal')
+  // Get the <span> element that closes the modal
+  var span = document.getElementsByClassName("close")[0];
+
+  // When the user clicks the button, open the modal
+  modal.style.display = "block";
+
+  // When the user clicks on <span> (x), close the modal
+  span.onclick = function() {
+    modal.style.display = "none";
+  }
+
+  // When the user clicks anywhere outside of the modal, close it
+  window.onclick = function(event) {
+    if (event.target == modal) {
+      modal.style.display = "none";
+    }
+  }
+}
+
+function comment(id){
+  Swal.fire({
+    title: 'Enter your comment!',
+    input: 'text',
+    showCancelButton: true,
+    inputValidator: (value) => {
+      if (!value) {
+        return 'You need to write something!'
+      } else {
+        submitComment(id, value)
+      }
+    }
+  })
+}
+
+function submitComment(id, comment){
+  Swal.fire({
+    position: 'top-end',
+    icon: 'info',
+    title: 'Sending your comment...',
+    showConfirmButton: false,
+    timer: 1000
+  })
+  var time = new Date().getTime()
+  var user = window.localStorage.getItem('name');
+  var json = '{"type": "comment", "author": "'+user+'", "description": "'+comment+'", "time": "'+time+'", "parent_id": "'+id+'"}'
+  hive_keychain.requestCustomJson(user, 'hive_sharer', 'Posting', json, 'Vote', function(response) {
+  	console.log(response.success);
+    if(response.success == true){
+      Swal.fire({
+        position: 'top-end',
+        icon: 'success',
+        title: 'Your comment has been sent',
+        showConfirmButton: false,
+        timer: 2000
+      })
     }
   });
 }
@@ -65,7 +165,7 @@ function trending(){
           score = {
             id: result[i].id,
             trending_score: trending_score,
-            background_image: result[i].image_preview,
+            background_image: result[i].background_image,
             profile_image: result[i].profile_image,
 						time: result[i].time,
             link: result[i].link,
@@ -88,8 +188,8 @@ function trending(){
             <div class="pxc-bg" style="background-image:url('${background_image}')"></div>
             <div class="pxc-avatar"><img src="${profile_image}" /></div>
             <div class="pxc-subcard">
-                <div class="pxc-title"><i class="fas fa-hand-holding-usd fa-border" onclick='tip("${link}", "${author}")'></i> <i class="fas fa-arrow-up fa-border" onclick=submitVote("${id}")></i> ${title}</div>
-                <div class="pxc-sub">${description} - ${trending_score}</div>
+                <div class="pxc-title"><i class="fas fa-hand-holding-usd fa-border" onclick='tip("${link}", "${author}")'></i> <i class="fas fa-arrow-up fa-border" onclick=submitVote("${id}")></i><a class='underline' onclick='displayPost("${sorted[i]}")'> ${title}</a></div>
+                <div class="pxc-sub">${description}</div>
               <div class="bottom-row">
                 <a href='${link}' class='button1'>${link}</a>  &nbsp - ${votes} Votes - ${comments} Comments - ${date}
               </div>
@@ -139,6 +239,7 @@ function tip(link, username){
   }).queue([
     {
       title: 'Amount',
+      input: 'number',
       text: 'How much HIVE would you like to tip?'
     },
     {
@@ -194,6 +295,13 @@ setTimeout(() => {
 
 
 function submitVote(id){
+  Swal.fire({
+    position: 'top-end',
+    icon: 'info',
+    title: 'Sending your vote...',
+    showConfirmButton: false,
+    timer: 1000
+  })
   var time = new Date().getTime()
   var user = window.localStorage.getItem('name');
   var json = '{"type": "vote", "voter": "'+user+'", "time": "'+time+'", "parent_id": "'+id+'"}'
@@ -220,6 +328,7 @@ function newPost(){
   }).queue([
     {
       title: 'Link',
+      input: 'url',
       text: 'Enter website link you want to share!'
     },
     {
