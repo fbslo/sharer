@@ -30,53 +30,27 @@ router.get('/posts', (req, res) => {
 					let metadata = result[0].posting_json_metadata || result[0].json_metadata
 					let json = JSON.parse(metadata)
 					var {name, profile_image} = json.profile
-					console.log(result1[i].link)
-
-					linkPreview(result1[i].link)
-						.then(resp => {
-              posts.push({
-                background_image: resp.image,
-                profile_image: profile_image,
-								time: result1[i].time,
-                link: resp.link,
-                author: result1[i].author,
-                id: result1[i].id,
-                title: resp.title,
-                description: result1[i].description,
-                votes: result1[i].votes,
-                comments: result1[i].comments
-              })
-								count += 1
-								if(count == result1.length){
-                  res.json(posts)
-								}
-						}).catch(catchErr => {
-								console.log(catchErr);
-								posts.push({
-	                background_image: 'N/A',
-	                profile_image: profile_image,
-									time: result1[i].time,
-	                link: result1[i].link,
-	                author: result1[i].author,
-	                id: result1[i].id,
-	                title: 'N/A',
-	                description: result1[i].description,
-	                votes: result1[i].votes,
-	                comments: result1[i].comments
-	              })
-									count += 1
-									if(count == result1.length){
-	                  res.json(posts)
-									}
-					});
+          posts.push({
+            background_image: result1[i].image_preview,
+            profile_image: profile_image,
+						time: result1[i].time,
+            link: result1[i].link,
+            author: result1[i].author,
+            id: result1[i].id,
+            title: result1[i].title_preview,
+            description: result1[i].description,
+            votes: result1[i].votes,
+            comments: result1[i].comments
+          })
+					count += 1
+					if(count == result1.length){
+            res.json(posts)
+					}
 				});
 			}
 		}
 	})
-
 })
-
-
 
 
 router.get('/profile', (req, res) => {

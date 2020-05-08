@@ -6,6 +6,12 @@ var con = require('../database/database.js')
 var post = require('./post.js')
 var vote = require('./vote.js')
 var comment = require('./comment.js')
+var update = require('./update_preview.js')
+
+//update link preview once per day
+setTimeout(() => {
+  update.update()
+}, 1000*60*60*24)
 
 module.exports = {
   streamBlockchain: //stream all operations
