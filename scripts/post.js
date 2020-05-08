@@ -1,5 +1,6 @@
 var hive = require('@hiveio/hive-js');
 var mysql = require('mysql')
+const { linkPreview } = require('link-preview-node')
 
 var con = require('../database/database.js')
 
@@ -26,10 +27,35 @@ module.exports = {
         con.query('INSERT INTO posts (author, link, description, time, tags, id, votes, comments) VALUES ?', [values], (err, result) => {
           if(err) console.log("Error inserting post: "+err)
           else if (result) console.log('Post inserted! ID: '+id)
+          updateLinkPreview(json, id)
         })
       } catch (error){
         console.log('Catching errors in /scripts/post.js...')
       }
     }
   }
+}
+
+function updateLinkPreview(json, id){
+  var {author, link, description, time, tags} = json
+  linkPreview(link)
+    .then(resp => {
+      updateLinkPreviewDatabase(resp, id)
+    }).catch(catchErr => {
+      console.log(catchErr);
+      let resp = ''
+      updateLinkPreviewDatabase([resp], id)
+  });
+}
+
+function updateLinkPreviewDatabase(resp, id){
+	var image = resp.image || 'N/A'
+	var title = resp.title || 'N/A'
+	var values = [image, title, id]
+	con.query('UPDATE posts SET image_preview = ?, title_preview = ? WHERE id = ?;', values, (err, result) => {
+		if(err) console.log("Error updating link preview!")
+		else {
+			console.log('Link updated for id: '+id)
+		}
+	})
 }

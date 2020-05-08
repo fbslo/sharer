@@ -101,5 +101,34 @@ router.get('/profile', (req, res) => {
 })
 
 
+router.get('/comments', (req, res) => {
+	var id = req.query.id || 'false'
+	if(id == 'false') res.json({success: false})
+	else {
+		con.query('SELECT * FROM comments WHERE parent_id = ?;', [id], (err, result) => {
+			var count = 0
+			if(err || result.length == 0){
+				console.log("Error getting api comments: "+err)
+				res.json({success: false})
+			}
+			else{
+				for (let i=0;i<result.length;i++){
+					var posts = []
+					posts.push({
+						parent_id: result[i].parent_id,
+						author: result[i].author,
+						id: result[i].id,
+						description: result[i].description
+					})
+					count += 1
+					if(count == result.length){
+						res.json(posts)
+					}
+				}
+			}
+		})
+	}
+})
+
 
 module.exports = router;

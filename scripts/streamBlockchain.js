@@ -9,6 +9,7 @@ var comment = require('./comment.js')
 var update = require('./update_preview.js')
 
 //update link preview once per day
+//update.update()
 setTimeout(() => {
   update.update()
 }, 1000*60*60*24)
