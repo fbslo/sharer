@@ -4,44 +4,67 @@
     <meta charset="utf-8">
     <title></title>
     <link rel="stylesheet" href="/profile.css">
-    <script type="text/javascript" href="./javascript.js"></script>
+    <script type="text/javascript" href="/profile.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@9"></script>
+    <script
+        src="https://code.jquery.com/jquery-3.5.1.min.js"
+        integrity="sha256-9/aliU8dGd2tb6OSsuzixeV4y/faTqgFtohetphbbj0="
+        crossorigin="anonymous"></script>
+    <script>
+    //laoding animation
+    function onReady(callback) {
+      var intervalId = window.setInterval(function() {
+        if (document.getElementsByTagName('body')[0] !== undefined) {
+          window.clearInterval(intervalId);
+          callback.call(this);
+        }
+      }, 1000);
+    }
+
+    function setVisible(selector, visible) {
+      document.querySelector(selector).style.display = visible ? 'block' : 'none';
+    }
+
+    onReady(function() {
+      setVisible('.wrapper', true);
+      setVisible('#loading', false);
+    });
+    </script>
   </head>
-  <body>
-
+  <body onload="start()">
+      <div id="loading"></div>
       <div class="wrapper">
-
       <div class="profile-card js-profile-card">
         <div class="profile-card__img">
-          <img src="<%= profile_image %>" alt="profile card">
+          <img src="" id='profile_image' alt="profile card">
         </div>
 
         <div class="profile-card__cnt js-profile-cnt">
-          <a href='https://hive.blog/@<%= username %>'><div class="profile-card__name"><%= name %></div></a>
-          <div class="profile-card__txt"><%= about %></div>
+          <a id='profile_link' href=''><div class="profile-card__name"><div id='name'></div></div></a>
+          <div class="profile-card__txt"><div id='about'></div></div>
           <div class="profile-card-loc">
-              <%= location %>
+              <div id='location'></div>
           </div>
 
           <div class="profile-card-inf">
             <div class="profile-card-inf__item">
-              <div class="profile-card-inf__title"><%= post_count %></div>
+              <div class="profile-card-inf__title"><div id='post_count'></div></div>
               <div class="profile-card-inf__txt">Posts</div>
             </div>
 
             <div class="profile-card-inf__item">
-              <div class="profile-card-inf__title"><%= followers %></div>
+              <div class="profile-card-inf__title"><div id='followers'></div></div>
               <div class="profile-card-inf__txt">Followers</div>
             </div>
 
             <div class="profile-card-inf__item">
-              <div class="profile-card-inf__title"><%= following %></div>
+              <div class="profile-card-inf__title"><div id='following'></div></div>
               <div class="profile-card-inf__txt">Following</div>
             </div>
           </div>
 
           <div class="profile-card-ctr">
-            <button class="profile-card__button button--orange" onClick='profileTip("<%- username %>")'>Tip</button>
+            <button class="profile-card__button button--orange" id='tip_button'>Tip</button>
           </div>
           <a href='/'>homepage</a>
           <script>
@@ -63,7 +86,7 @@
                 ]).then((result) => {
                 if (result.value) {
                   var amount = parseFloat(result.value[0]).toFixed(3)
-                  var memo = result.value[1]
+                  var memo = result.value[1] + ' [HiveSharer Tip]'
                   hive_keychain.requestTransfer('', username, amount, memo, 'HIVE', function(response) {
                     console.log(response);
                   });
@@ -84,6 +107,47 @@
       </div>
 
     </div>
+    <script>
+    var urlParams;
+    (window.onpopstate = function () {
+        var match,
+            pl     = /\+/g,  // Regex for replacing addition symbol with a space
+            search = /([^&=]+)=?([^&]*)/g,
+            decode = function (s) { return decodeURIComponent(s.replace(pl, " ")); },
+            query  = window.location.search.substring(1);
 
+        urlParams = {};
+        while (match = search.exec(query))
+           urlParams[decode(match[1])] = decode(match[2]);
+    })();
+
+    function start(){
+      var account = urlParams["account"] || 'fbslo'
+      $.ajax({
+        url: '/api/profile?account='+account,
+        contentType: "application/json",
+        dataType: 'json',
+        success: function(result){
+          console.log("API result: " + JSON.stringify(result))
+          if(result.success == true) {
+            var {username, name, profile_image, about, location, post_count,followers, following} = result
+            document.getElementById('name').innerHTML += name
+            document.getElementById('about').innerHTML += about
+            document.getElementById('location').innerHTML += location
+            document.getElementById('post_count').innerHTML += post_count
+            document.getElementById('followers').innerHTML += followers
+            document.getElementById('following').innerHTML += following
+            var profile_link = document.getElementById('profile_link');
+            profile_link.href = "http://hive.blog/@" + username
+            document.getElementById('tip_button').onclick=function(){profileTip(username)};
+            document.getElementById("profile_image").src = profile_image;
+          }
+          else {
+            alert('API Call failed, try again!')
+          }
+        }
+      });
+    }
+    </script>
   </body>
 </html>

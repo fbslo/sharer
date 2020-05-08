@@ -1,3 +1,53 @@
+var urlParams;
+(window.onpopstate = function () {
+    var match,
+        pl     = /\+/g,  // Regex for replacing addition symbol with a space
+        search = /([^&=]+)=?([^&]*)/g,
+        decode = function (s) { return decodeURIComponent(s.replace(pl, " ")); },
+        query  = window.location.search.substring(1);
+
+    urlParams = {};
+    while (match = search.exec(query))
+       urlParams[decode(match[1])] = decode(match[2]);
+})();
+
+function start(){
+  var page = urlParams["page"] || 1
+  $.ajax({
+    url: '/api/posts?page='+page,
+    contentType: "application/json",
+    dataType: 'json',
+    success: function(result){
+      console.log("API result: " + JSON.stringify(result))
+      if(JSON.stringify(result) != '{"success":false}') {
+        //sort array
+        var sorted = result.sort((a,b)=>b-a)
+        for(i=0;i<result.length;i++){
+          var {success, background_image, profile_image, time, link, author, id, title, description, votes, comments} = sorted[i]
+          var html = `<div class="plx-card silver">
+            <div class="pxc-bg" style="background-image:url('${background_image}')"></div>
+            <div class="pxc-avatar"><img src="${profile_image}" /></div>
+            <div class="pxc-subcard">
+                <div class="pxc-title"><i class="fas fa-hand-holding-usd fa-border" onclick='tip("${link}", "${author}")'></i> <i class="fas fa-arrow-up fa-border" onclick=submitVote("${id}")></i> ${title}</div>
+                <div class="pxc-sub">${description}</div>
+              <div class="bottom-row">
+                <a href='${link}' class='button1'>${link}</a>  &nbsp - ${votes} Votes - ${comments} Comments
+              </div>
+            </div>
+          </div>`
+          document.getElementById('display').innerHTML += html
+        }
+        document.getElementById("loader1").remove();
+        document.getElementById("loader2").remove();
+      }
+      else {
+        alert('API Call failed, try again!')
+      }
+    }
+  });
+}
+
+
 function getAccountProfile(){
   Swal.fire({
   title: 'Enter account name!',
@@ -32,7 +82,7 @@ function tip(link, username){
     ]).then((result) => {
     if (result.value) {
       var amount = parseFloat(result.value[0]).toFixed(3)
-      var memo = result.value[1]
+      var memo = result.value[1] + ' [HiveSharer Tip]'
       hive_keychain.requestTransfer('', username, amount, memo, 'HIVE', function(response) {
         console.log(response);
       });
@@ -123,7 +173,15 @@ function newPost(){
       var user = window.localStorage.getItem('name');
       var json = '{"type": "post", "author": "'+user+'", "link": "'+link+'","description": "'+desc+'", "time": "'+time+'", "tags": "'+tag+'"}'
       hive_keychain.requestCustomJson(user, 'hive_sharer', 'Posting', json, 'Post', function(response) {
-      	console.log(response);
+        if(response.success == true){
+          Swal.fire({
+            position: 'top-end',
+            icon: 'success',
+            title: 'Your post has been sent',
+            showConfirmButton: false,
+            timer: 2000
+          })
+        }
       });
       Swal.fire({
         title: 'All done!',
