@@ -20,10 +20,12 @@ function start(){
     success: function(result){
       console.log("API result: " + JSON.stringify(result))
       if(JSON.stringify(result) != '{"success":false}') {
-        //sort array
-        var sorted = result.sort((a,b)=>b-a)
+        //sort array by time of creation, new on the top
+        var sorted = result.sort((a,b)=> parseFloat(b.time) - parseFloat(a.time))
         for(i=0;i<result.length;i++){
           var {success, background_image, profile_image, time, link, author, id, title, description, votes, comments} = sorted[i]
+          let date_raw = new Date(Number(time)) + ''
+          let date = (date_raw.split('(')[0]).slice(3)
           var html = `<div class="plx-card silver">
             <div class="pxc-bg" style="background-image:url('${background_image}')"></div>
             <div class="pxc-avatar"><img src="${profile_image}" /></div>
@@ -31,20 +33,84 @@ function start(){
                 <div class="pxc-title"><i class="fas fa-hand-holding-usd fa-border" onclick='tip("${link}", "${author}")'></i> <i class="fas fa-arrow-up fa-border" onclick=submitVote("${id}")></i> ${title}</div>
                 <div class="pxc-sub">${description}</div>
               <div class="bottom-row">
-                <a href='${link}' class='button1'>${link}</a>  &nbsp - ${votes} Votes - ${comments} Comments
+                <a href='${link}' class='button1'>${link}</a>  &nbsp - ${votes} Votes - ${comments} Comments - ${date}
               </div>
             </div>
           </div>`
           document.getElementById('display').innerHTML += html
         }
-        document.getElementById("loader1").remove();
-        document.getElementById("loader2").remove();
+        document.getElementById("loaders").remove();
       }
       else {
         alert('API Call failed, try again!')
       }
     }
   });
+}
+
+function trending(){
+  var page = urlParams["page"] || 1
+  $.ajax({
+    url: '/api/posts?page='+page,
+    contentType: "application/json",
+    dataType: 'json',
+    success: async function(result){
+      //console.log("API result: " + JSON.stringify(result))
+      if(JSON.stringify(result) != '{"success":false}') {
+        //create trening array
+        var trending = []
+        //trending score algorithm
+        for(i=0;i<result.length;i++){
+          var trending_score = await trendingScoreCalculator(result[i])
+          score = {
+            id: result[i].id,
+            trending_score: trending_score,
+            background_image: result[i].image_preview,
+            profile_image: result[i].profile_image,
+						time: result[i].time,
+            link: result[i].link,
+            author: result[i].author,
+            title: result[i].title,
+            description: result[i].description,
+            votes: result[i].votes,
+            comments: result[i].comments
+          }
+          trending.push(score)
+        }
+        //sort array by time of creation, new on the top
+        var sorted = trending.sort((a,b)=> parseFloat(b.trending_score) - parseFloat(a.trending_score))
+        document.getElementById('display').innerHTML = ''
+        for(i=0;i<result.length;i++){
+          var {trending_score, background_image, profile_image, time, link, author, id, title, description, votes, comments} = sorted[i]
+          let date_raw = new Date(Number(time)) + ''
+          let date = (date_raw.split('(')[0]).slice(3)
+          var html = `<div class="plx-card silver">
+            <div class="pxc-bg" style="background-image:url('${background_image}')"></div>
+            <div class="pxc-avatar"><img src="${profile_image}" /></div>
+            <div class="pxc-subcard">
+                <div class="pxc-title"><i class="fas fa-hand-holding-usd fa-border" onclick='tip("${link}", "${author}")'></i> <i class="fas fa-arrow-up fa-border" onclick=submitVote("${id}")></i> ${title}</div>
+                <div class="pxc-sub">${description} - ${trending_score}</div>
+              <div class="bottom-row">
+                <a href='${link}' class='button1'>${link}</a>  &nbsp - ${votes} Votes - ${comments} Comments - ${date}
+              </div>
+            </div>
+          </div>`
+          document.getElementById('display').innerHTML += html
+        }
+        document.getElementById("loaders").remove();
+      }
+      else {
+        alert('API Call failed, try again!')
+      }
+    }
+  });
+}
+
+function trendingScoreCalculator(result){
+  ///var current_time = new Date().getTime()
+  //var post_age_hours = (current_time - Number(result.time)/1000*60*60) //post age in hours
+  var trending_score = result.votes
+  return trending_score;
 }
 
 
