@@ -19,7 +19,6 @@ module.exports = {
           console.log('Account is not the same as commenter!')
         } else{
           insertIntoDatabase(data, json)
-          updateCommentCount(json)
         }
       }
     }
@@ -29,7 +28,7 @@ module.exports = {
       con.query('SELECT comments FROM posts WHERE id = ?', [parent_id], (err, result) => {
         if(err) console.log("Error seleting comments! Error: "+err)
         else {
-          let comments_old = result[0].comments
+          let comments_old = Number(result[0].comments)
           let comments = comments_old + 1
           var values = [comments, parent_id]
           con.query('UPDATE posts SET comments = ? WHERE id = ?;', values, (err2, result2) => {
@@ -48,7 +47,10 @@ module.exports = {
       try {
         con.query('INSERT INTO comments (author, description, time, parent_id, id) VALUES ?', [values], (err, result) => {
           if(err) console.log("Error inserting comment: "+err)
-          else if (result) console.log('Comment inserted! ID: '+id)
+          else if (result){
+            updateCommentCount(json)
+            console.log('Comment inserted! ID: '+id)
+          }
         })
       } catch (error){
         console.log('Catching errors in /scripts/comment.js...')
