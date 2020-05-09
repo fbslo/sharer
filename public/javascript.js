@@ -32,7 +32,7 @@ function start(){
             <div class="pxc-bg" style="background-image:url('${background_image}')"></div>
             <div class="pxc-avatar"><img src="${profile_image}" /></div>
             <div class="pxc-subcard">
-                <div class="pxc-title"><i class="fas fa-hand-holding-usd fa-border" onclick='tip("${link}", "${author}")'></i> <i class="fas fa-arrow-up fa-border" onclick=submitVote("${id}")></i> <a class='underline' onclick='displayPost("${background_image}", "${profile_image}", "${date}", "${link}", "${author}", "${id}", "${title}", "${description}", "${votes}", "${comments}")'>${title}</a></div>
+                <div class="pxc-title"><i class="fas fa-hand-holding-usd fa-border" onclick='tip("${link}", "${author}")'></i> <i class="fas fa-arrow-up fa-border" onclick=submitVote("${id}")></i> <a class='underline' onclick='displayPost("${background_image}", "${profile_image}", "${time}", "${link}", "${author}", "${id}", "${title}", "${description}", "${votes}", "${comments}")'>${title}</a></div>
                 <div class="pxc-sub">${description}</div>
               <div class="bottom-row">
                 <a href='${link}' class='button1'>${link}</a>  &nbsp - ${votes} Votes - ${comments} Comments - ${date}
@@ -51,7 +51,16 @@ function start(){
   });
 }
 
-function displayPost(background_image, profile_image, date, link, author, id, title, description, votes, comments){
+function displayTime(time){
+  let date_raw = new Date(Number(time)) + ''
+  let date = date_raw.split('(')[0] + '<br> (' + date_raw.split('(')[1]
+  Swal.fire({
+    html: date,
+    showCancelButton: false,
+  })
+}
+
+function displayPost(background_image, profile_image, time, link, author, id, title, description, votes, comments){
 console.log(id)
   var modal = `<!-- The Modal -->
       <div id="myModal" class="modal">
@@ -59,15 +68,15 @@ console.log(id)
         <div class="modal-content">
           <div class="modal-header">
             <span class="close">&times;</span>
-            <h2>${title}</h2>
+            <h2><a href='${link}'>${title}</a></h2>
           </div>
           <div class="modal-body">
             <p>${description}</p>
           </div>
           <div class="modal-footer">
-            <h3>${date} - ${votes} Votes <i class="fas fa-arrow-up fa-border" onclick=submitVote("${id}")></i> - ${comments} Comments <i class="fas fa-comment fa-border" onclick=comment("${id}")></i></h3>
+            <h3><a href='https://hive.blog/@${author}'>${author}</a> - ${moment.unix(time / 1000).fromNow()} <i class="fas fa-question fa-xs" onclick="displayTime('${time}')"></i> - ${votes} Votes <i class="fas fa-arrow-up fa-border" onclick=submitVote("${id}")></i> - ${comments} Comments <i class="fas fa-comment fa-border" onclick=comment("${id}")></i></h3>
           </div>
-          <div id='comments'></div>
+          <div id='list_comments'></div>
         </div>
       </div>`
   document.getElementById('modal').innerHTML = modal
@@ -78,10 +87,16 @@ console.log(id)
     dataType: 'json',
     success: function(result){
       if(JSON.stringify(result) != '{"success":false}') {
+        let list_comments = ''
         for(i=0;i<result.length;i++){
-           comments += '<div class="modal-body">'+result[i].description+'</div>'
+          //add botton-border to all but last comment
+          if(i == result.length-1){
+            list_comments += `<div class="modal-comment"><a href="https://hive.blog/@${result[i].author}" > ${result[i].author}</a> - ${result[i].description} - (${moment.unix(Number(result[i].time) / 1000).fromNow()})</div>`
+          } else {
+            list_comments += `<div class="modal-comment bottom-border"><a href="https://hive.blog/@${result[i].author}" > ${result[i].author}</a> - ${result[i].description} - (${moment.unix(Number(result[i].time) / 1000).fromNow()})</div>`
+          }
         }
-        document.getElementById('comments').innerHTML = comments
+        $('#list_comments').html(list_comments)
       } else {
         alert('API call failed, cannot load comments / post has 0 comments!')
       }
@@ -98,12 +113,14 @@ console.log(id)
   // When the user clicks on <span> (x), close the modal
   span.onclick = function() {
     modal.style.display = "none";
+    document.getElementById('list_comments').innerHTML = ''
   }
 
   // When the user clicks anywhere outside of the modal, close it
   window.onclick = function(event) {
     if (event.target == modal) {
       modal.style.display = "none";
+      document.getElementById('list_comments').innerHTML = ''
     }
   }
 }

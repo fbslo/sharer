@@ -112,13 +112,14 @@ router.get('/comments', (req, res) => {
 				res.json({success: false})
 			}
 			else{
+				var posts = []
 				for (let i=0;i<result.length;i++){
-					var posts = []
 					posts.push({
 						parent_id: result[i].parent_id,
 						author: result[i].author,
 						id: result[i].id,
-						description: result[i].description
+						description: result[i].description,
+						time: result[i].time
 					})
 					count += 1
 					if(count == result.length){
