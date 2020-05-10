@@ -4,7 +4,6 @@ var mysql = require('mysql')
 var con = require('../database/database.js')
 
 module.exports = {
-  //Vote: {"type": "vote", "voter": "fbslo", "time": "128126812", "parent_id": "fbslo-1588844637591-hivesharer"}.
   add_vote: function add_vote(data){
     json(data)
     async function json(data){
@@ -19,7 +18,6 @@ module.exports = {
             else {
               if(result.length == '0'){
                 insertIntoDatabase(data, json)
-                updateVoteCount(json)
               } else {
                 console.log('Duplicated vote from: '+json.voter)
               }
@@ -29,10 +27,9 @@ module.exports = {
       }
     }
 
-    async function updateVoteCount(json){
-      var {voter, time, parent_id} = json
+    async function updateVoteCount(parent_id){
       con.query('SELECT votes FROM posts WHERE id = ?', [parent_id], (err, result) => {
-        if(err) console.log("Error selecting votes! Error: "+err)
+        if(err || result.length == 0) console.log("Error selecting votes! Error: "+err)
         else {
           let votes_old = result[0].votes
           let votes = votes_old + 1
@@ -46,16 +43,32 @@ module.exports = {
     }
 
     async function insertIntoDatabase(data, json){
-      var {voter, time, parent_id} = json
-      var id = 'vote-' + voter + '-' + time + '-hivesharer'
-      var values = [[voter, time, parent_id, id]]
-      try {
-        con.query('INSERT INTO votes (voter, time, parent_id, id) VALUES ?', [values], (err, result) => {
-          if(err) console.log("Error inserting vote: "+err)
-          else if (result) console.log('Vote inserted! ID: '+id)
-        })
-      } catch (error){
-        console.log('Catching errors in /scripts/vote.js...')
+      var {voter, time, id, parent_id} = json
+      if(!voter || !time || !id || !parent_id){
+        console.log('Missing information from vote!')
+      } else {
+        let current_time = new Date().getTime()
+        let id_voter = id.split('-')[1]
+        let id_time = id.split('-')[2]
+        let vote_prefix = id.split('-')[0]
+        if((current_time - Number(time)) > 1000*120){
+          console.log('Post is more than 2 minutes old!')
+        } else if(id_voter != voter || Number(id_time) != Number(time) || vote_prefix != 'vote'){
+          console.log('ID format is not correct!')
+        } else {
+          var values = [[voter, time, parent_id, id]]
+          try {
+            con.query('INSERT INTO votes (voter, time, parent_id, id) VALUES ?', [values], (err, result) => {
+              if(err) console.log("Error inserting vote: "+err)
+              else if (result){
+                updateVoteCount(parent_id)
+                console.log('Vote inserted! ID: '+id)
+              }
+            })
+          } catch (error){
+            console.log('Catching errors in /scripts/vote.js...')
+          }
+        }
       }
     }
   }

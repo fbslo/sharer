@@ -21,6 +21,6 @@ hive.config.set('alternative_api_endpoints', ['https://api.hive.blog', 'https://
 var con = require('./database/database.js')
 var stream = require('./scripts/streamBlockchain.js')
 
-stream.streamBlockchain()
+//stream.streamBlockchain()
 
 app.listen(5000)

@@ -1,11 +1,11 @@
 var hive = require('@hiveio/hive-js');
 var mysql = require('mysql')
 const { linkPreview } = require('link-preview-node')
+var xss = require("xss");
 
 var con = require('../database/database.js')
 
 module.exports = {
-  //id (hive_sharer) and json {"author": "fbslo", "link": "https://fbslo.net","description": "My Personal website!", "time": "128126812", "tag": "test"}.
   add_post: function add_post(data){
     json(data)
     async function json(data){
@@ -20,17 +20,35 @@ module.exports = {
     }
 
     async function insertIntoDatabase(data, json){
-      var {author, link, description, time, tags} = json
-      var id = author + '-' + time + '-hivesharer'
-      var values = [[author, link, description, time, tags, id, 0, 0]]
-      try {
-        con.query('INSERT INTO posts (author, link, description, time, tags, id, votes, comments) VALUES ?', [values], (err, result) => {
-          if(err) console.log("Error inserting post: "+err)
-          else if (result) console.log('Post inserted! ID: '+id)
-          updateLinkPreview(json, id)
-        })
-      } catch (error){
-        console.log('Catching errors in /scripts/post.js...')
+      var {author, link, description, time, tags, id} = json
+      if(!author || !link || !description || !time || !tags || !id){
+        console.log('Missing information from post!')
+      } else {
+        let current_time = new Date().getTime()
+        let id_author = id.split('-')[0]
+        let id_time = id.split('-')[1]
+        if((current_time - Number(time)) > 1000*120){
+          console.log('Post is more than 2 minutes old!')
+        } else if(id_author != author || Number(id_time) != Number(time)){
+          console.log('ID format is not correct!')
+        }
+        else {
+          var author = xss(author)
+          var link = xss(link);
+          var description = xss(description);
+          var tags = xss(tags);
+
+          var values = [[author, link, description, time, tags, id, 0, 0]]
+          try {
+            con.query('INSERT INTO posts (author, link, description, time, tags, id, votes, comments) VALUES ?', [values], (err, result) => {
+              if(err) console.log("Error inserting post: "+err)
+              else if (result) console.log('Post inserted! ID: '+id)
+              updateLinkPreview(json, id)
+            })
+          } catch (error){
+            console.log('Catching errors in /scripts/post.js...')
+          }
+        }
       }
     }
   }
@@ -53,7 +71,7 @@ function updateLinkPreviewDatabase(resp, id){
 	var title = resp.title || 'N/A'
 	var values = [image, title, id]
 	con.query('UPDATE posts SET image_preview = ?, title_preview = ? WHERE id = ?;', values, (err, result) => {
-		if(err) console.log("Error updating link preview!")
+		if(err || result.length == 0) console.log("Error updating link preview!")
 		else {
 			console.log('Link updated for id: '+id)
 		}
