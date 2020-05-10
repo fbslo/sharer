@@ -10,8 +10,8 @@ router.get('/posts', (req, res) => {
 	if(page < 0){
 		page = 1
 	}
-	var limit = (page-1)*100
-	con.query('SELECT * FROM posts LIMIT 100 OFFSET ?;', limit, (err1, result1) => {
+	var limit = (page-1)*10
+	con.query('SELECT * FROM posts LIMIT 10 OFFSET ?;', limit, (err1, result1) => {
 		var html = ''
 		var count = 0
 		if(err1 || result1.length == 0){
@@ -26,25 +26,26 @@ router.get('/posts', (req, res) => {
 				hive.api.getAccounts([result1[i].author], async function(err, result) {
 					if(err) {
             res.json({success: false})
-          }
-					let metadata = result[0].posting_json_metadata || result[0].json_metadata
-					let json = JSON.parse(metadata)
-					var {name, profile_image} = json.profile
-          posts.push({
-            background_image: result1[i].image_preview,
-            profile_image: profile_image,
-						time: result1[i].time,
-            link: result1[i].link,
-            author: result1[i].author,
-            id: result1[i].id,
-            title: result1[i].title_preview,
-            description: result1[i].description,
-            votes: result1[i].votes,
-            comments: result1[i].comments
-          })
-					count += 1
-					if(count == result1.length){
-            res.json(posts)
+          } else {
+						let metadata = result[0].posting_json_metadata || result[0].json_metadata
+						let json = JSON.parse(metadata)
+						var {name, profile_image} = json.profile
+						posts.push({
+							background_image: result1[i].image_preview,
+							profile_image: profile_image,
+							time: result1[i].time,
+							link: result1[i].link,
+							author: result1[i].author,
+							id: result1[i].id,
+							title: result1[i].title_preview,
+							description: result1[i].description,
+							votes: result1[i].votes,
+							comments: result1[i].comments
+						})
+						count += 1
+						if(count == result1.length){
+							res.json(posts)
+						}
 					}
 				});
 			}
@@ -61,42 +62,43 @@ router.get('/profile', (req, res) => {
         success: false
       }
       res.json(json_err)
-    }
-		let metadata = result[0].posting_json_metadata || result[0].json_metadata
-		let json = JSON.parse(metadata)
-		var {name, about, location, profile_image} = json.profile
-		hive.api.getFollowCount(query, function(err2, result2) {
-	  	if(err2) {
-        var json = {
-          success: true,
-          username: query,
-          name: name,
-          about: about,
-          location: location,
-          profile_image: profile_image,
-          post_count: result[0].post_count,
-          following: 'N/A',
-          followers: 'N/A'
-        }
-        res.json(json)
-      }
-			if(result2){
-				let followers = result2.follower_count
-				let following = result2.following_count
-				var json = {
-          success: true,
-					username: query,
-					name: name,
-					about: about,
-					location: location,
-					profile_image: profile_image,
-					post_count: result[0].post_count,
-					following: following,
-					followers: followers
+    } else {
+			let metadata = result[0].posting_json_metadata || result[0].json_metadata
+			let json = JSON.parse(metadata)
+			var {name, about, location, profile_image} = json.profile
+			hive.api.getFollowCount(query, function(err2, result2) {
+				if(err2) {
+					var json = {
+						success: true,
+						username: query,
+						name: name,
+						about: about,
+						location: location,
+						profile_image: profile_image,
+						post_count: result[0].post_count,
+						following: 'N/A',
+						followers: 'N/A'
+					}
+					res.json(json)
 				}
-        res.json(json)
-			}
-		});
+				if(result2){
+					let followers = result2.follower_count
+					let following = result2.following_count
+					var json = {
+						success: true,
+						username: query,
+						name: name,
+						about: about,
+						location: location,
+						profile_image: profile_image,
+						post_count: result[0].post_count,
+						following: following,
+						followers: followers
+					}
+					res.json(json)
+				}
+			});
+		}
 	});
 })
 
@@ -107,11 +109,12 @@ router.get('/comments', (req, res) => {
 	else {
 		con.query('SELECT * FROM comments WHERE parent_id = ?;', [id], (err, result) => {
 			var count = 0
-			if(err || result.length == 0){
+			if(err){
 				console.log("Error getting api comments: "+err)
 				res.json({success: false})
-			}
-			else{
+			} else if (result.length == 0) {
+				res.json({})
+			} else{
 				var posts = []
 				for (let i=0;i<result.length;i++){
 					posts.push({
@@ -129,6 +132,38 @@ router.get('/comments', (req, res) => {
 			}
 		})
 	}
+})
+
+router.get('/accountposts', (req, res) => {
+var account = req.query.account || 'fbslo'
+	con.query('SELECT * FROM posts WHERE author = ?;', [account], (err, result) => {
+		var count = 0
+		if(err){
+			console.log("Error getting api accountposts: "+err)
+			res.json({success: false})
+		} else if (result.length == 0){
+			res.json({})
+		}
+		else{
+			var posts = []
+			for (let i=0;i<result.length;i++){
+				posts.push({
+					time: result[i].time,
+					link: result[i].link,
+					author: result[i].author,
+					id: result[i].id,
+					title: result[i].title_preview,
+					description: result[i].description,
+					votes: result[i].votes,
+					comments: result[i].comments
+				})
+				count += 1
+				if(count == result.length){
+					res.json(posts)
+				}
+			}
+		}
+	})
 })
 
 

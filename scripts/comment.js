@@ -1,5 +1,6 @@
 var hive = require('@hiveio/hive-js');
 var mysql = require('mysql')
+var xss = require("xss");
 
 var con = require('../database/database.js')
 
@@ -9,7 +10,6 @@ var mysql = require('mysql')
 var con = require('../database/database.js')
 
 module.exports = {
-  //Comment: {"type": "comment", "author": "fbslo", "description": "My Personal website!", "time": "128126812", "parent_id": "fbslo-1588844637591-hivesharer"}
   add_comment: function add_comment(data){
     json(data)
     async function json(data){
@@ -26,7 +26,7 @@ module.exports = {
     async function updateCommentCount(json){
       var {author, time, parent_id} = json
       con.query('SELECT comments FROM posts WHERE id = ?', [parent_id], (err, result) => {
-        if(err) console.log("Error seleting comments! Error: "+err)
+        if(err || result.length == 0) console.log("Error seleting comments! Error: "+err)
         else {
           let comments_old = Number(result[0].comments)
           let comments = comments_old + 1
@@ -41,19 +41,37 @@ module.exports = {
 
 
     async function insertIntoDatabase(data, json){
-      var {author, description, time, parent_id} = json
-      var id = 'comment-' + author + '-' + time + '-hivesharer'
-      var values = [[author, description, time, parent_id, id]]
-      try {
-        con.query('INSERT INTO comments (author, description, time, parent_id, id) VALUES ?', [values], (err, result) => {
-          if(err) console.log("Error inserting comment: "+err)
-          else if (result){
-            updateCommentCount(json)
-            console.log('Comment inserted! ID: '+id)
+      var {author, description, time, parent_id, id} = json
+      if(!author || !description || !time || !parent_id || !id){
+        console.log('Missing information from comment!')
+      } else {
+        let current_time = new Date().getTime()
+        let id_author = id.split('-')[1]
+        let id_time = id.split('-')[2]
+        let comment_prefix = id.split('-')[0]
+        if((current_time - Number(time)) > 1000*120){
+          console.log('Post is more than 2 minutes old!')
+        } else if(id_author != author || Number(id_time) != Number(time) || comment_prefix != 'comment'){
+          console.log('ID format is not correct!')
+        }
+        else {
+          var author = xss(author)
+          var link = xss(link);
+          var description = xss(description);
+
+          var values = [[author, description, time, parent_id, id]]
+          try {
+            con.query('INSERT INTO comments (author, description, time, parent_id, id) VALUES ?', [values], (err, result) => {
+              if(err) console.log("Error inserting comment: "+err)
+              else if (result){
+                updateCommentCount(json)
+                console.log('Comment inserted! ID: '+id)
+              }
+            })
+          } catch (error){
+            console.log('Catching errors in /scripts/comment.js...')
           }
-        })
-      } catch (error){
-        console.log('Catching errors in /scripts/comment.js...')
+        }
       }
     }
   }

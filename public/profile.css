@@ -11,8 +11,13 @@
 	 color: #212529;
 }
  a, a:hover {
-	 text-decoration: none;
+   text-decoration: none;
 }
+
+.link {
+  text-decoration: underline;
+}
+
  .icon {
 	 display: inline-block;
 	 width: 1em;

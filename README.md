@@ -18,7 +18,7 @@ Reward pool is not used, users can still reward their favourite sharers and peop
 
 ***How does this app works? <sup>for developers & curious cats</sup>***
 
-App is streaming blockchain and listening for `hive_sharer` custom_json operations. When they are detected, they are stored into MySQL database (for faster (offline) access, you can use HiveSQL or pure blockchain instead).
+App is streaming blockchain and listening for custom_json operations with id `hive_sharer`. When they are detected, they are stored into MySQL database (for faster (offline) access, you can use HiveSQL or pure blockchain instead).
 
 There are 3 transaction types: `post`, `comment`, `vote`
 
@@ -26,64 +26,166 @@ Frontend is accessing data using API at `/api/...`
 
 ---
 
-***How does this app makes money?***
+***JSON operations***
 
-It doesn't. Only monetization is by affiliate links to exchanges where users can buy HIVE and by taking 1% fee from all tips made on our platform (sers can always send tip manually from wallet to avoid this fee.)
+New post:
 
----
+```
+var time = new Date().getTime()
+var id_post = 'fbslo' + '-' + time + '-hivesharer'
 
-Post: `{"type": "post", "author": "fbslo", "link": "https://fbslo.net","description": "My Personal website!", "time": "128126812", "tags": "test"}`.
+post = `{
+  "type": "post",
+  "author": "fbslo",
+  "link": "https://fbslo.net",
+  "description": "My personal website!",
+  "time": "${time}",
+  "tags": "dev",
+  "id": "${id_post}"
+}`
+```
 
 Votes: 0
 
 Comments: 0
 
-ID: `author + '-' + time + '-hivesharer'`
+---
 
-ID is generated before inserting operation into database (to prevent "trending" manipulation), will be moved to custom_json to support possible other frontends.
+New vote:
+
+```
+var time = new Date().getTime()
+var id_vote = 'vote-fbslo' + '-' + time + '-hivesharer'
+
+vote = `{
+  "type": "vote",
+  "voter": "fbslo",
+  "time": "${time}",
+  "id": "${id_vote}",
+  "parent_id": "fbslo-1589046191432-hivesharer"
+}`
+```
 
 ---
 
-Vote: `{"type": "vote", "voter": "fbslo", "time": "128126812", "parent_id": "fbslo-1588844637591-hivesharer"}`.
+New comment:
 
-ID: `'vote-' + author + '-' + time + '-hivesharer'`
+```
+var time = new Date().getTime()
+var id_comment = 'comment-fbslo' + '-' + time + '-hivesharer'
 
----
-
-Comment: `{"type": "comment", "author": "fbslo", "description": "My Personal website!", "time": "128126812", "parent_id": "fbslo-1588844637591-hivesharer"}`
-
-ID: `'comment-' + author + '-' + time + '-hivesharer'`
+var comment = `{
+  "type": "comment",
+  "author": "fbslo",
+  "description": "Great Website!",
+  "time": "${time}",
+  "parent_id": "fbslo-1589046191432-hivesharer",
+  "id": "${id_comment}"
+}`
+```
 
 ---
 
 Frontend CSS templates used:
 
-* https://freefrontend.com/css-cards/
+* https://codepen.io/JavaScriptJunkie/pen/jvRGZy by Muhammed Erdem
+* https://codepen.io/TSUmari/pen/WmXGgo by Tsumari
 * Font Awesome icons
 * Loading icons by https://loading.io/
 
 3rd party libraries used:
 
+Frontend:
 * jQuery
 * SweetAlert2
+* Moment.js
+
+Backend:
 * @hiveio/hive-js
 * express, body-parser, ejs
 * link-preview-node
 * mysql
+* xss
+
 
 ---
 
+***How to set up your own dApp***
+
+Clone github repository and install MySQL database.
+
+Database schema:
+
+* database name: `sharer`
+* Tables:
+
+```
+Table name: posts
++---------------+---------+------+-----+---------+-------+
+| Field         | Type    | Null | Key | Default | Extra |
++---------------+---------+------+-----+---------+-------+
+| author        | text    | YES  |     | NULL    |       |
+| link          | text    | YES  |     | NULL    |       |
+| description   | text    | YES  |     | NULL    |       |
+| time          | text    | YES  |     | NULL    |       |
+| tags          | text    | YES  |     | NULL    |       |
+| id            | text    | YES  |     | NULL    |       |
+| votes         | int(11) | YES  |     | NULL    |       |
+| comments      | text    | YES  |     | NULL    |       |
+| image_preview | text    | YES  |     | NULL    |       |
+| title_preview | text    | YES  |     | NULL    |       |
++---------------+---------+------+-----+---------+-------+
+
+Table name: comments
++-------------+------+------+-----+---------+-------+
+| Field       | Type | Null | Key | Default | Extra |
++-------------+------+------+-----+---------+-------+
+| author      | text | YES  |     | NULL    |       |
+| description | text | YES  |     | NULL    |       |
+| time        | text | YES  |     | NULL    |       |
+| parent_id   | text | YES  |     | NULL    |       |
+| id          | text | YES  |     | NULL    |       |
++-------------+------+------+-----+---------+-------+
+
+Table name: votes
++-----------+------+------+-----+---------+-------+
+| Field     | Type | Null | Key | Default | Extra |
++-----------+------+------+-----+---------+-------+
+| voter     | text | YES  |     | NULL    |       |
+| time      | text | YES  |     | NULL    |       |
+| parent_id | text | YES  |     | NULL    |       |
+| id        | text | YES  |     | NULL    |       |
++-----------+------+------+-----+---------+-------+
+```
+
+(Instructions on how to install NodeJS, NPM and MySQL: https://gist.github.com/fbslo/b63bab4c9e7cfc09e5b613fbe4715937)
+
 Rename `/database/db_config.json.demo` to `/database/db_config.json` and edit your database details.
 
-`Run npm install`
+Run `npm install`
 
-`Run node server.js`
+Run `node server.js`
+
+---
+
+***Trending Algorithm***
+
+To sort trending page, I used score calculated from number of votes and post age.
+
+`let score = votes / Math.pow(post_age_days, 0.6)`
+
+![image.png](https://images.hive.blog/DQmf5qQ7gH1NRd5KNhYg9Focne5farasehDNDWR3QWMRUpu/image.png)
+<sup>Example for post with 1000 votes.</sup>
 
 ---
 
 <h3>API Documentation</h3>
 
 `GET` `/api/profile`
+
+Api parameters: `account` (default is fbslo)
+
+Example: `/api/profile?account=fbslo`
 
 Return type: `json`
 
@@ -92,35 +194,90 @@ On error: `success: false`
 On success:
 ```
 success: true,
-username: query,
+username: username,
 name: name,
 about: about,
 location: location,
 profile_image: profile_image,
-post_count: result[0].post_count,
-following: following, //or N/A
-followers: followers //or N/A
+post_count: number_of_posts_on_hive,
+following: number_of_following_on_hive, //or N/A
+followers: number_of_followers_on_hive //or N/A
 ```
 
 ---
 
 `GET` `/api/posts`
 
-limit: 100 per page, pagination `?page=2`...
+Api parameters: `page` (default is 1)
+
+Limit: 10 per page
+
+Example: `/api/posts?page=2`
+
+Return type: `json`
 
 On error: `success: false`
 
 On Success:
 ```
 success: true
-[0] background_image: string,
-    profile_image: string,
-    link: string,
-    author: string,
-    id: string,
-    title: string,
-    description: string,
-    votes: integer,
-    comments: string
+[0] background_image: image_from_website,
+    profile_image: author's_profile_image,
+    link: webpage_link,
+    author: author_username,
+    id: post_id,
+    title: title_from_web_page,
+    description: description_by_author,
+    votes: number_of_votes, //int
+    comments: number_of_comments //string
+...
+```
+
+---
+
+`GET` `/api/comments`
+
+Api parameters:  `id`
+
+Example: `/api/comments?id=fbslo-1589046191432-hivesharer`
+
+Return type: `json`
+
+On error: `success: false`
+
+On Success:
+```
+success: true
+[0] parent_id: parent_post_id,
+    author: author's_username,
+    id: comment_id,
+    description: comment_body,
+    time: time_in_(unix_timestamp * 1000)
+...
+```
+
+---
+
+`GET` `/api/accountposts`
+
+Api parameters:  `account` (default is fbslo)
+
+Example: `/api/accountposts?account=fbslo`
+
+Return type: `json`
+
+On error: `success: false`
+
+On Success:
+```
+success: true
+[0] time: time_in_(unix_timestamp * 1000),
+    link: website_link,
+    author: author_username,
+    id: post_id,
+    title: title_from_web_page,
+    description: description_by_author,
+    votes: number_of_votes, //int
+    comments: number_of_comments //string
 ...
 ```

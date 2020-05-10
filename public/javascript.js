@@ -25,23 +25,21 @@ function start(){
         document.getElementById('display').innerHTML = ''
         for(i=0;i<result.length;i++){
           var {success, background_image, profile_image, time, link, author, id, title, description, votes, comments} = sorted[i]
-          let post_data = sorted[i]
-          let date_raw = new Date(Number(time)) + ''
-          let date = (date_raw.split('(')[0]).slice(3)
           var html = `<div class="plx-card silver">
             <div class="pxc-bg" style="background-image:url('${background_image}')"></div>
-            <div class="pxc-avatar"><img src="${profile_image}" /></div>
+            <div class="pxc-avatar"><a href='/profile?account=${author}'><img src="${profile_image}" /></a></div>
             <div class="pxc-subcard">
                 <div class="pxc-title"><i class="fas fa-hand-holding-usd fa-border" onclick='tip("${link}", "${author}")'></i> <i class="fas fa-arrow-up fa-border" onclick=submitVote("${id}")></i> <a class='underline' onclick='displayPost("${background_image}", "${profile_image}", "${time}", "${link}", "${author}", "${id}", "${title}", "${description}", "${votes}", "${comments}")'>${title}</a></div>
-                <div class="pxc-sub">${description}</div>
+                <div class="pxc-sub"><a href='/profile?account=${author}'>@${author}</a> - ${description}</div>
               <div class="bottom-row">
-                <a href='${link}' class='button1'>${link}</a>  &nbsp - ${votes} Votes - ${comments} Comments - ${date}
+                <a href='${link}' class='button1'>${link}</a>  &nbsp - ${votes} Votes - ${comments} Comments -&nbsp <a onclick="displayTime('${time}')"> ${moment.unix(Number(time) / 1000).fromNow()}</a>
               </div>
             </div>
           </div>`
           document.getElementById('display').innerHTML += html
         }
         document.getElementById("loaders").remove();
+        document.title = "HiveSharer - New";
       }
       else {
         alert('API Call failed, try again!')
@@ -61,7 +59,6 @@ function displayTime(time){
 }
 
 function displayPost(background_image, profile_image, time, link, author, id, title, description, votes, comments){
-console.log(id)
   var modal = `<!-- The Modal -->
       <div id="myModal" class="modal">
         <!-- Modal content -->
@@ -74,7 +71,7 @@ console.log(id)
             <p>${description}</p>
           </div>
           <div class="modal-footer">
-            <h3><a href='https://hive.blog/@${author}'>${author}</a> - ${moment.unix(time / 1000).fromNow()} <i class="fas fa-question fa-xs" onclick="displayTime('${time}')"></i> - ${votes} Votes <i class="fas fa-arrow-up fa-border" onclick=submitVote("${id}")></i> - ${comments} Comments <i class="fas fa-comment fa-border" onclick=comment("${id}")></i></h3>
+            <h3><a href='https://hive.blog/@${author}'>${author}</a> - <a onclick="displayTime('${time}')">${moment.unix(time / 1000).fromNow()}</a> - ${votes} Votes <i class="fas fa-arrow-up fa-border" onclick=submitVote("${id}")></i> - ${comments} Comments <i class="fas fa-comment fa-border" onclick=comment("${id}")></i></h3>
           </div>
           <div id='list_comments'></div>
         </div>
@@ -140,7 +137,7 @@ function comment(id){
   })
 }
 
-function submitComment(id, comment){
+function submitComment(parent_id, comment){
   Swal.fire({
     position: 'top-end',
     icon: 'info',
@@ -150,7 +147,8 @@ function submitComment(id, comment){
   })
   var time = new Date().getTime()
   var user = window.localStorage.getItem('name');
-  var json = '{"type": "comment", "author": "'+user+'", "description": "'+comment+'", "time": "'+time+'", "parent_id": "'+id+'"}'
+  var id = 'comment-'+ user + '-' + time + '-hivesharer'
+  var json = '{"type": "comment", "author": "'+user+'", "description": "'+comment+'", "time": "'+time+'", "parent_id": "'+parent_id+'", "id": "'+id+'"}'
   hive_keychain.requestCustomJson(user, 'hive_sharer', 'Posting', json, 'Vote', function(response) {
   	console.log(response.success);
     if(response.success == true){
@@ -163,88 +161,6 @@ function submitComment(id, comment){
       })
     }
   });
-}
-
-function trending(){
-  var page = urlParams["page"] || 1
-  $.ajax({
-    url: '/api/posts?page='+page,
-    contentType: "application/json",
-    dataType: 'json',
-    success: async function(result){
-      //console.log("API result: " + JSON.stringify(result))
-      if(JSON.stringify(result) != '{"success":false}') {
-        //create trening array
-        var trending = []
-        //trending score algorithm
-        for(i=0;i<result.length;i++){
-          var trending_score = await trendingScoreCalculator(result[i])
-          score = {
-            id: result[i].id,
-            trending_score: trending_score,
-            background_image: result[i].background_image,
-            profile_image: result[i].profile_image,
-						time: result[i].time,
-            link: result[i].link,
-            author: result[i].author,
-            title: result[i].title,
-            description: result[i].description,
-            votes: result[i].votes,
-            comments: result[i].comments
-          }
-          trending.push(score)
-        }
-        //sort array by time of creation, new on the top
-        var sorted = trending.sort((a,b)=> parseFloat(b.trending_score) - parseFloat(a.trending_score))
-        document.getElementById('display').innerHTML = ''
-        for(i=0;i<result.length;i++){
-          var {trending_score, background_image, profile_image, time, link, author, id, title, description, votes, comments} = sorted[i]
-          let date_raw = new Date(Number(time)) + ''
-          let date = (date_raw.split('(')[0]).slice(3)
-          var html = `<div class="plx-card silver">
-            <div class="pxc-bg" style="background-image:url('${background_image}')"></div>
-            <div class="pxc-avatar"><img src="${profile_image}" /></div>
-            <div class="pxc-subcard">
-                <div class="pxc-title"><i class="fas fa-hand-holding-usd fa-border" onclick='tip("${link}", "${author}")'></i> <i class="fas fa-arrow-up fa-border" onclick=submitVote("${id}")></i><a class='underline' onclick='displayPost("${sorted[i]}")'> ${title}</a></div>
-                <div class="pxc-sub">${description}</div>
-              <div class="bottom-row">
-                <a href='${link}' class='button1'>${link}</a>  &nbsp - ${votes} Votes - ${comments} Comments - ${date}
-              </div>
-            </div>
-          </div>`
-          document.getElementById('display').innerHTML += html
-        }
-        document.getElementById("loaders").remove();
-      }
-      else {
-        alert('API Call failed, try again!')
-      }
-    }
-  });
-}
-
-function trendingScoreCalculator(result){
-  ///var current_time = new Date().getTime()
-  //var post_age_hours = (current_time - Number(result.time)/1000*60*60) //post age in hours
-  var trending_score = result.votes
-  return trending_score;
-}
-
-
-function getAccountProfile(){
-  Swal.fire({
-  title: 'Enter account name!',
-  input: 'text',
-  inputPlaceholder: 'Hive username',
-  showCancelButton: true,
-  inputValidator: (value) => {
-    if (!value) {
-      return 'You need to write something!'
-    } else {
-      window.location.href = '/profile?account='+value
-    }
-  }
-})
 }
 
 function tip(link, username){
@@ -311,7 +227,7 @@ setTimeout(() => {
 }, 2000)
 
 
-function submitVote(id){
+function submitVote(parent_id){
   Swal.fire({
     position: 'top-end',
     icon: 'info',
@@ -321,7 +237,8 @@ function submitVote(id){
   })
   var time = new Date().getTime()
   var user = window.localStorage.getItem('name');
-  var json = '{"type": "vote", "voter": "'+user+'", "time": "'+time+'", "parent_id": "'+id+'"}'
+  var id = 'vote-' + user + '-' + time + '-hivesharer'
+  var json = '{"type": "vote", "voter": "'+user+'", "time": "'+time+'", "parent_id": "'+parent_id+'", "id": "'+id+'"}'
   hive_keychain.requestCustomJson(user, 'hive_sharer', 'Posting', json, 'Vote', function(response) {
   	console.log(response.success);
     if(response.success == true){
@@ -334,6 +251,89 @@ function submitVote(id){
       })
     }
   });
+}
+
+function trending(){
+  var page = urlParams["page"] || 1
+  $.ajax({
+    url: '/api/posts?page='+page,
+    contentType: "application/json",
+    dataType: 'json',
+    success: async function(result){
+      //console.log("API result: " + JSON.stringify(result))
+      if(JSON.stringify(result) != '{"success":false}') {
+        //create trening array
+        var trending = []
+        //trending score algorithm
+        for(i=0;i<result.length;i++){
+          var trending_score = await trendingScoreCalculator(result[i])
+          score = {
+            id: result[i].id,
+            trending_score: trending_score,
+            background_image: result[i].background_image,
+            profile_image: result[i].profile_image,
+						time: result[i].time,
+            link: result[i].link,
+            author: result[i].author,
+            title: result[i].title,
+            description: result[i].description,
+            votes: result[i].votes,
+            comments: result[i].comments
+          }
+          trending.push(score)
+        }
+        //sort array by time of creation, new on the top
+        var sorted = trending.sort((a,b)=> parseFloat(b.trending_score) - parseFloat(a.trending_score))
+        document.getElementById('display').innerHTML = ''
+        for(i=0;i<result.length;i++){
+          var {trending_score, background_image, profile_image, time, link, author, id, title, description, votes, comments} = sorted[i]
+          let date_raw = new Date(Number(time)) + ''
+          let date = (date_raw.split('(')[0]).slice(3)
+          var html = `<div class="plx-card silver">
+            <div class="pxc-bg" style="background-image:url('${background_image}')"></div>
+            <div class="pxc-avatar"><img src="${profile_image}" /></div>
+            <div class="pxc-subcard">
+                <div class="pxc-title"><i class="fas fa-hand-holding-usd fa-border" onclick='tip("${link}", "${author}")'></i> <i class="fas fa-arrow-up fa-border" onclick=submitVote("${id}")></i> <a class='underline' onclick='displayPost("${background_image}", "${profile_image}", "${time}", "${link}", "${author}", "${id}", "${title}", "${description}", "${votes}", "${comments}")'>${title}</a></div>
+                <div class="pxc-sub"><a href='/profile?account=${author}'>@${author}</a> - ${description}</div>
+              <div class="bottom-row">
+                <a href='${link}' class='button1'>${link}</a>  &nbsp - ${votes} Votes - ${comments} Comments -&nbsp <a onclick="displayTime('${time}')"> ${moment.unix(Number(time) / 1000).fromNow()}</a>
+              </div>
+            </div>
+          </div>`
+          document.getElementById('display').innerHTML += html
+        }
+        document.title = "HiveSharer - Trending";
+        document.getElementById("loaders").remove();
+      }
+      else {
+        alert('API Call failed, try again!')
+      }
+    }
+  });
+}
+
+function trendingScoreCalculator(result){
+  let current_time = new Date().getTime()
+  let post_age_days = (current_time - Number(result.time)/1000*86400) //post age in days
+  let trending_score = result.votes / Math.pow(post_age_days, 0.6)
+  return trending_score;
+}
+
+
+function getAccountProfile(){
+  Swal.fire({
+  title: 'Enter account name!',
+  input: 'text',
+  inputPlaceholder: 'Hive username',
+  showCancelButton: true,
+  inputValidator: (value) => {
+    if (!value) {
+      return 'You need to write something!'
+    } else {
+      window.location.href = '/profile?account='+value
+    }
+  }
+})
 }
 
 function newPost(){
@@ -363,7 +363,8 @@ function newPost(){
       var tag = result.value[2]
       var time = new Date().getTime()
       var user = window.localStorage.getItem('name');
-      var json = '{"type": "post", "author": "'+user+'", "link": "'+link+'","description": "'+desc+'", "time": "'+time+'", "tags": "'+tag+'"}'
+      var id =  user + '-' + time + '-hivesharer'
+      var json = '{"type": "post", "author": "'+user+'", "link": "'+link+'","description": "'+desc+'", "time": "'+time+'", "tags": "'+tag+'", "id": "'+id+'"}'
       hive_keychain.requestCustomJson(user, 'hive_sharer', 'Posting', json, 'Post', function(response) {
         if(response.success == true){
           Swal.fire({
