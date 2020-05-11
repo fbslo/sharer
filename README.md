@@ -1,10 +1,14 @@
 <center><h3>Hive Sharer</h3></center>
 
 <center>***Sharing links on the chain!***</center>
+<center>[Website](https://sharer.fbslo.net) - [GitHub](https://github.com/fbslo/sharer)</center>
+
+
+<center>![image.png](https://images.hive.blog/DQmbeD4u4BACY1u4Sz3wshuL5SM1EN58sicT52FfPPgUga8/image.png)</center>
 
 ---
 
-**Abstract:**
+**Abstract**
 
 Sharing links on Hive is controversial topic. Some people think that profiting from reward pool by simpliy sharing links is not ok, others think it should be rewarded. Post that motivated me to think about this more, was https://peakd.com/hivewatchers/@demotruk/copy-and-paste-is-not-the-same-as-spam-or-plagiarism by @demotruk.
 
@@ -13,6 +17,8 @@ Hive Sharer is solving this problem by introducing blockhain-based link sharing 
 Users can also upvote posts (upvotes don't have any monetary value), and most upvoted posts will end up on trending page.
 
 Reward pool is not used, users can still reward their favourite sharers and people can still share links they like. Sharers can earn only by providing high quality links (solving the problem of low quality content & self-voting).
+
+This project is my entry for STEMGeek's First Hackathon by @themarkymark.
 
 ---
 
@@ -172,7 +178,7 @@ Rename `/database/db_config.json.demo` to `/database/db_config.json` and edit yo
 
 Run `npm install`
 
-Run `node server.js`
+Run `node server.js` will start app on port 5000.
 
 ---
 
@@ -289,3 +295,42 @@ success: true
     comments: number_of_comments //string
 ...
 ```
+
+---
+
+`GET` `/api/trending`
+
+Api parameters:  none
+
+Example: `/api/trending`
+
+Return type: `json`
+
+On error: `success: false`
+
+On Success:
+```
+success: true
+[0] background_image: image_from_website,
+    profile_image: profile_image_from_hive,
+    time: time_in_(unix_timestamp * 1000),
+    link: website_link,
+    author: author_username,
+    id: post_id,
+    title: title_from_web_page,
+    description: description_by_author,
+    votes: number_of_votes, //int
+    comments: number_of_comments //string
+    trending_score: trending_score //see above explanation of trending score calculation
+...
+```
+
+---  
+
+---
+
+<center><b>@fbslo</b><br>Discord: fbslo#8470</center>
+
+---
+
+***This SOFTWARE PRODUCT is provided by THE PROVIDER "as is" and "with all faults." THE PROVIDER makes no representations or warranties of any kind concerning the safety, suitability, lack of viruses, inaccuracies, typographical errors, or other harmful components of this SOFTWARE PRODUCT. There are inherent dangers in the use of any software, and you are solely responsible for determining whether this SOFTWARE PRODUCT is compatible with your equipment and other software installed on your equipment. You are also solely responsible for the protection of your equipment and backup of your data, and THE PROVIDER will not be liable for any damages you may suffer in connection with using, modifying, or distributing this SOFTWARE PRODUCT.***
