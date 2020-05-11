@@ -37,7 +37,9 @@ To share new link, click "Share" button, enter link, description and one tag (so
 
 ***How does this app works? <sup>for developers & curious cats</sup>***
 
-App is streaming blockchain and listening for custom_json operations with id `hive_sharer`. When they are detected, they are stored into MySQL database (for faster (offline) access, you can use HiveSQL or pure blockchain instead to build frontend for HiveSharer).
+App is streaming blockchain and listening for custom_json operations with id `hive_sharer`. When they are detected, they are stored into MySQL database (for faster (offline) access, you can use HiveSQL or pure blockchain data instead to build your own frontend for HiveSharer).
+
+I used internal database instead of using data from blockhain because public RPC nodes can be slow and unreliable. It can also make removing unwanted content (spam...) faters, since there is no need for hardcoded blacklist, but only `DELETE FROM posts WHERE author='spammer';`... Data is still stored in blockchain, but frontend is not showing it anymore.
 
 There are 3 transaction types: `post`, `comment`, `vote`
 
