@@ -1,11 +1,11 @@
 <center><h3>Hive Sharer</h3></center>
 
-<center>***Sharing links on the chain!***</center>
-<center>[Website](https://sharer.fbslo.net) - [GitHub](https://github.com/fbslo/sharer)</center>
+***Sharing links on the chain!***
+
+[Website](https://sharer.fbslo.net) - [GitHub](https://github.com/fbslo/sharer)
 
 
-<center>![image.png](https://images.hive.blog/DQmbeD4u4BACY1u4Sz3wshuL5SM1EN58sicT52FfPPgUga8/image.png)</center>
-
+![image.png](https://images.hive.blog/DQmbeD4u4BACY1u4Sz3wshuL5SM1EN58sicT52FfPPgUga8/image.png)
 ---
 
 **Abstract**
