@@ -160,7 +160,7 @@ function displayPost(background_image, profile_image, time, link, author, id, ti
             <p>${description}</p>
           </div>
           <div class="modal-footer">
-            <h3><a href='https://hive.blog/@${author}'>${author}</a> - <a onclick="displayTime('${time}')">${moment.unix(time / 1000).fromNow()}</a> - ${votes} Votes <i class="fas fa-arrow-up fa-border" onclick=submitVote("${id}")></i> - ${comments} Comments <i class="fas fa-comment fa-border" onclick=comment("${id}")></i></h3>
+            <h3><a href='/profile?account=${author}'>${author}</a> - <a onclick="displayTime('${time}')">${moment.unix(time / 1000).fromNow()}</a> - ${votes} Votes <i class="fas fa-arrow-up fa-border" onclick=submitVote("${id}")></i> - ${comments} Comments <i class="fas fa-comment fa-border" onclick=comment("${id}")></i></h3>
           </div>
           <div id='list_comments'></div>
         </div>
@@ -177,9 +177,9 @@ function displayPost(background_image, profile_image, time, link, author, id, ti
         for(i=0;i<result.length;i++){
           //add botton-border to all but last comment
           if(i == result.length-1){
-            list_comments += `<div class="modal-comment"><a href="https://hive.blog/@${result[i].author}" > ${result[i].author}</a> - ${result[i].description} - (${moment.unix(Number(result[i].time) / 1000).fromNow()})</div>`
+            list_comments += `<div class="modal-comment"><a href="/profile?account=${result[i].author}" > ${result[i].author}</a> - ${result[i].description} - (${moment.unix(Number(result[i].time) / 1000).fromNow()})</div>`
           } else {
-            list_comments += `<div class="modal-comment bottom-border"><a href="https://hive.blog/@${result[i].author}" > ${result[i].author}</a> - ${result[i].description} - (${moment.unix(Number(result[i].time) / 1000).fromNow()})</div>`
+            list_comments += `<div class="modal-comment bottom-border"><a href="/profile?account=${result[i].author}" > ${result[i].author}</a> - ${result[i].description} - (${moment.unix(Number(result[i].time) / 1000).fromNow()})</div>`
           }
         }
         $('#list_comments').html(list_comments)
