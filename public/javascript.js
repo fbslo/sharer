@@ -208,6 +208,7 @@ setTimeout(() => {
       input: 'text',
       inputPlaceholder: 'Hive username',
       showCancelButton: false,
+      allowOutsideClick: false,
       inputValidator: (value) => {
         if (!value) {
           return 'You need to write something!'
@@ -221,7 +222,8 @@ setTimeout(() => {
       Swal.fire({
         title: 'Keychain',
         html: 'You need Hive Keychain to vote, post, comment or tip!',
-        confirmButtonText: 'I understand!'
+        confirmButtonText: 'I understand!',
+        allowOutsideClick: false
       })
   }
 }, 2000)
@@ -254,36 +256,15 @@ function submitVote(parent_id){
 }
 
 function trending(){
-  var page = urlParams["page"] || 1
   $.ajax({
-    url: '/api/posts?page='+page,
+    url: '/api/trending',
     contentType: "application/json",
     dataType: 'json',
     success: async function(result){
       //console.log("API result: " + JSON.stringify(result))
       if(JSON.stringify(result) != '{"success":false}') {
-        //create trening array
-        var trending = []
-        //trending score algorithm
-        for(i=0;i<result.length;i++){
-          var trending_score = await trendingScoreCalculator(result[i])
-          score = {
-            id: result[i].id,
-            trending_score: trending_score,
-            background_image: result[i].background_image,
-            profile_image: result[i].profile_image,
-						time: result[i].time,
-            link: result[i].link,
-            author: result[i].author,
-            title: result[i].title,
-            description: result[i].description,
-            votes: result[i].votes,
-            comments: result[i].comments
-          }
-          trending.push(score)
-        }
         //sort array by time of creation, new on the top
-        var sorted = trending.sort((a,b)=> parseFloat(b.trending_score) - parseFloat(a.trending_score))
+        var sorted = result.sort((a,b)=> parseFloat(b.trending_score) - parseFloat(a.trending_score))
         document.getElementById('display').innerHTML = ''
         for(i=0;i<result.length;i++){
           var {trending_score, background_image, profile_image, time, link, author, id, title, description, votes, comments} = sorted[i]
@@ -311,14 +292,6 @@ function trending(){
     }
   });
 }
-
-function trendingScoreCalculator(result){
-  let current_time = new Date().getTime()
-  let post_age_days = (current_time - Number(result.time)/1000*86400) //post age in days
-  let trending_score = result.votes / Math.pow(post_age_days, 0.6)
-  return trending_score;
-}
-
 
 function getAccountProfile(){
   Swal.fire({
@@ -386,4 +359,9 @@ function newPost(){
       })
     }
   })
+}
+
+function changeUsername(){
+  localStorage.removeItem('name');
+  window.location.reload();
 }

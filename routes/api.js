@@ -166,5 +166,57 @@ var account = req.query.account || 'fbslo'
 	})
 })
 
+router.get('/trending', (req, res) => {
+	con.query('SELECT * FROM posts;', (err1, result1) => {
+		var html = ''
+		var count = 0
+		if(err1 || result1.length == 0){
+			console.log("Error getting api index page: "+err1)
+			res.json({
+        success: false
+      })
+		}
+		else{
+			for (let i=0;i<result1.length;i++){
+        var posts = []
+				hive.api.getAccounts([result1[i].author], async function(err, result) {
+					let trending_score = await trendingScoreCalculator(result1[i].votes, result1[i].time)
+					if(err) {
+            res.json({success: false})
+          } else {
+						let metadata = result[0].posting_json_metadata || result[0].json_metadata
+						let json = JSON.parse(metadata)
+						var {name, profile_image} = json.profile
+						posts.push({
+							background_image: result1[i].image_preview,
+							profile_image: profile_image,
+							time: result1[i].time,
+							link: result1[i].link,
+							author: result1[i].author,
+							id: result1[i].id,
+							title: result1[i].title_preview,
+							description: result1[i].description,
+							votes: result1[i].votes,
+							comments: result1[i].comments,
+							trending_score: trending_score
+						})
+						count += 1
+						if(count == result1.length){
+							res.json(posts)
+						}
+					}
+				});
+			}
+		}
+	})
+})
+
+function trendingScoreCalculator(votes, time){
+	let time_int = Number(time)
+  let current_time = new Date().getTime()
+  let post_age_days = ((current_time - time_int)/(1000*86400)) //post age in days
+  let trending_score = votes / Math.pow(post_age_days, 0.6)
+  return trending_score;
+}
 
 module.exports = router;

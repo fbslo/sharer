@@ -1,28 +1,41 @@
-<h3>Hive Sharer</h3>
+<center><h3>Hive Sharer</h3></center>
 
-***Sharing links on the chain!***
+<center>***Sharing links on the chain!***</center>
 
 ---
 
 **Abstract:**
 
-Sharing links on Hive is controversial topic. Some people think that profiting from reqard pool by simpliy sharing links is not ok, others think it should be rewarded.
+Sharing links on Hive is controversial topic. Some people think that profiting from reward pool by simpliy sharing links is not ok, others think it should be rewarded. Post that motivated me to think about this more, was https://peakd.com/hivewatchers/@demotruk/copy-and-paste-is-not-the-same-as-spam-or-plagiarism by @demotruk.
 
 Hive Sharer is solving this problem by introducing blockhain-based link sharing platform, where users can reward each other by tipping HIVE if they like shared content.
 
 Users can also upvote posts (upvotes don't have any monetary value), and most upvoted posts will end up on trending page.
 
-Reward pool is not used, users can still reward their favourite sharers and people can still share links they like. Shares can earn only by providing high quality link (instead of low quality & self-voting).
+Reward pool is not used, users can still reward their favourite sharers and people can still share links they like. Sharers can earn only by providing high quality links (solving the problem of low quality content & self-voting).
 
 ---
 
+***How to use the site***
+
+You must have Hive Keychain installed to vote, comment, post or tip. Get it for [Firefox](https://addons.mozilla.org/en-US/firefox/addon/hive-keychain/) or [Chrome](https://chrome.google.com/webstore/detail/hive-keychain/jcacnejopjdphbnjgfaaobbfafkihpep).
+
+When you visit the site for the first time, you must enter your hive username. Your username is than stored into your browser's local storage and used with KeyChain when you try to vote, comment, post... If you used wrong username, click [change username] in the footer.
+
+To visit user's profile, click on "Account" button and enter hive username or click on author's name in the post (or click the user's avatar).
+
+To share new link, click "Share" button, enter link, description and one tag (sorting by tag is not available yet).
+
+---
+
+
 ***How does this app works? <sup>for developers & curious cats</sup>***
 
-App is streaming blockchain and listening for custom_json operations with id `hive_sharer`. When they are detected, they are stored into MySQL database (for faster (offline) access, you can use HiveSQL or pure blockchain instead).
+App is streaming blockchain and listening for custom_json operations with id `hive_sharer`. When they are detected, they are stored into MySQL database (for faster (offline) access, you can use HiveSQL or pure blockchain instead to build frontend for HiveSharer).
 
 There are 3 transaction types: `post`, `comment`, `vote`
 
-Frontend is accessing data using API at `/api/...`
+Frontend is accessing data using API at `/api/...` (more API documentation bellow.)
 
 ---
 
@@ -31,8 +44,8 @@ Frontend is accessing data using API at `/api/...`
 New post:
 
 ```
-var time = new Date().getTime()
-var id_post = 'fbslo' + '-' + time + '-hivesharer'
+var time = new Date().getTime() //unix_timestamp * 1000
+var id_post = 'fbslo' + '-' + time + '-hivesharer' //author-time-hivesharer
 
 post = `{
   "type": "post",
@@ -44,11 +57,6 @@ post = `{
   "id": "${id_post}"
 }`
 ```
-
-Votes: 0
-
-Comments: 0
-
 ---
 
 New vote:
@@ -88,8 +96,8 @@ var comment = `{
 
 Frontend CSS templates used:
 
-* https://codepen.io/JavaScriptJunkie/pen/jvRGZy by Muhammed Erdem
-* https://codepen.io/TSUmari/pen/WmXGgo by Tsumari
+* https://codepen.io/JavaScriptJunkie/pen/jvRGZy by Muhammed Erdem (used for profile page)
+* https://codepen.io/TSUmari/pen/WmXGgo by Tsumari (used for new/trending page)
 * Font Awesome icons
 * Loading icons by https://loading.io/
 
