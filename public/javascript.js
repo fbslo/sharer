@@ -261,11 +261,14 @@ function tip(link, username){
   }).queue([
     {
       title: 'Amount',
-      input: 'number',
-      text: 'How much HIVE would you like to tip?'
+      input: 'text',
+      text: 'How much HIVE would you like to tip (e.g. 0.500)?'
     },
     {
       title: 'Message',
+      inputAttributes: {
+        maxlength: 100
+      },
       text: 'Say something nice!'
     }
     ]).then((result) => {
@@ -408,14 +411,23 @@ function newPost(){
     {
       title: 'Link',
       input: 'url',
+      inputAttributes: {
+        maxlength: 100
+      },
       text: 'Enter website link you want to share!'
     },
     {
       title: 'Description',
+      inputAttributes: {
+        maxlength: 100
+      },
       text: 'Enter custom description!'
     },
     {
       title: 'Tag',
+      inputAttributes: {
+        maxlength: 100
+      },
       text: 'Enter one tag!'
     }
     ]).then((result) => {

@@ -75,6 +75,9 @@ function comment(id){
   Swal.fire({
     title: 'Enter your comment!',
     input: 'text',
+    inputAttributes: {
+      maxlength: 100
+    },
     showCancelButton: true,
     inputValidator: (value) => {
       if (!value) {
@@ -121,11 +124,14 @@ function tip(link, username){
   }).queue([
     {
       title: 'Amount',
-      input: 'number',
-      text: 'How much HIVE would you like to tip?'
+      input: 'text',
+      text: 'How much HIVE would you like to tip (e.g. 0.500)?'
     },
     {
       title: 'Message',
+      inputAttributes: {
+        maxlength: 100
+      },
       text: 'Say something nice!'
     }
     ]).then((result) => {
