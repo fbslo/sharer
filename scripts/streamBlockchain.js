@@ -17,7 +17,6 @@ setTimeout(() => {
 module.exports = {
   streamBlockchain: //stream all operations
   async function streamBlockchain(){
-    hive.config.set('alternative_api_endpoints', ['https://anyx.io', 'https://api.hive.blog', 'https://api.pharesim.me', 'https://rpc.ausbit.dev', 'https://hived.privex.io', 'https://api.openhive.network', 'https://techcoderx.com', 'https://rpc.esteem.app']);
     hive.api.streamTransactions('head', async function(err, result) {
       if (err){
         restart()

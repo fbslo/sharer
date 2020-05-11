@@ -10,13 +10,13 @@
 
 **Abstract**
 
-Sharing links on Hive is controversial topic. Some people think that profiting from reward pool by simpliy sharing links is not ok, others think it should be rewarded. Post that motivated me to think about this more, was https://peakd.com/hivewatchers/@demotruk/copy-and-paste-is-not-the-same-as-spam-or-plagiarism by @demotruk.
+Sharing links on Hive is controversial topic. Some people think that profiting from reward pool by simply sharing links is not ok, others think it should be rewarded. Post that motivated me to think about this more, was https://peakd.com/hivewatchers/@demotruk/copy-and-paste-is-not-the-same-as-spam-or-plagiarism by @demotruk.
 
 Hive Sharer is solving this problem by introducing blockhain-based link sharing platform, where users can reward each other by tipping HIVE if they like shared content.
 
 Users can also upvote posts (upvotes don't have any monetary value), and most upvoted posts will end up on trending page.
 
-Reward pool is not used, users can still reward their favourite sharers and people can still share links they like. Sharers can earn only by providing high quality links (solving the problem of low quality content & self-voting).
+Reward pool is not used, users can still reward their favorite sharers and people can still share links they like. Sharers can earn only by providing high quality links (solving the problem of low quality content & self-voting).
 
 This project is my entry for STEMGeek's First Hackathon by @themarkymark.
 
@@ -236,7 +236,6 @@ On error: `success: false`
 
 On Success:
 ```
-success: true
 [0] background_image: image_from_website,
     profile_image: author's_profile_image,
     link: webpage_link,
@@ -263,7 +262,6 @@ On error: `success: false`
 
 On Success:
 ```
-success: true
 [0] parent_id: parent_post_id,
     author: author's_username,
     id: comment_id,
@@ -286,7 +284,6 @@ On error: `success: false`
 
 On Success:
 ```
-success: true
 [0] time: time_in_(unix_timestamp * 1000),
     link: website_link,
     author: author_username,
@@ -312,7 +309,6 @@ On error: `success: false`
 
 On Success:
 ```
-success: true
 [0] background_image: image_from_website,
     profile_image: profile_image_from_hive,
     time: time_in_(unix_timestamp * 1000),
