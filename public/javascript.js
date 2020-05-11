@@ -13,11 +13,12 @@ var urlParams;
 
 function start(){
   var page = urlParams["page"] || 1
+  document.title = "HiveSharer - New";
   $.ajax({
     url: '/api/posts?page='+page,
     contentType: "application/json",
     dataType: 'json',
-    success: function(result){
+    success: async function(result){
       //console.log("API result: " + JSON.stringify(result))
       if(JSON.stringify(result) != '{"success":false}') {
         //sort array by time of creation, new on the top
@@ -37,16 +38,104 @@ function start(){
             </div>
           </div>`
           document.getElementById('display').innerHTML += html
+          let load_button = `<center><button class="profile-card__button button--orange" onclick="loadMore('${page}')">Load More</button></center>`
+          document.getElementById('load').innerHTML = load_button
         }
         document.getElementById("loaders").remove();
         document.title = "HiveSharer - New";
       }
       else {
-        alert('API Call failed, try again!')
+        alert('API Call failed, try again! / No more posts!')
         console.log("API result: " + JSON.stringify(result))
       }
     }
   });
+}
+
+var loadMoreClicks = 1
+function loadMore(page){
+  console.log(loadMoreClicks)
+  if(loadMoreClicks == 1){
+    let page_num = Number(page)+1
+    document.getElementById('load').innerHTML = ''
+    $.ajax({
+      url: '/api/posts?page='+page_num,
+      contentType: "application/json",
+      dataType: 'json',
+      success: function(result){
+        //console.log("API result: " + JSON.stringify(result))
+        if(JSON.stringify(result) != '{"success":false}') {
+          //sort array by time of creation, new on the top
+          var sorted = result.sort((a,b)=> parseFloat(b.time) - parseFloat(a.time))
+          for(i=0;i<result.length;i++){
+            var {success, background_image, profile_image, time, link, author, id, title, description, votes, comments} = sorted[i]
+            var html = `<div class="plx-card silver">
+              <div class="pxc-bg" style="background-image:url('${background_image}')"></div>
+              <div class="pxc-avatar"><a href='/profile?account=${author}'><img src="${profile_image}" /></a></div>
+              <div class="pxc-subcard">
+                  <div class="pxc-title"><i class="fas fa-hand-holding-usd fa-border" onclick='tip("${link}", "${author}")'></i> <i class="fas fa-arrow-up fa-border" onclick=submitVote("${id}")></i> <a class='underline' onclick='displayPost("${background_image}", "${profile_image}", "${time}", "${link}", "${author}", "${id}", "${title}", "${description}", "${votes}", "${comments}")'>${title}</a></div>
+                  <div class="pxc-sub"><a href='/profile?account=${author}'>@${author}</a> - ${description}</div>
+                <div class="bottom-row">
+                  <a href='${link}' class='button1'>${link}</a>  &nbsp - ${votes} Votes - ${comments} Comments -&nbsp <a onclick="displayTime('${time}')"> ${moment.unix(Number(time) / 1000).fromNow()}</a>
+                </div>
+              </div>
+            </div>`
+            document.getElementById('display').innerHTML += html
+            let load_button = `<center><button class="profile-card__button button--orange" onclick="loadMore('${page}')">Load More</button></center>`
+            document.getElementById('load').innerHTML = load_button
+            loadMoreClicks += 1
+          }
+          document.getElementById("loaders").remove();
+          document.title = "HiveSharer - New";
+        }
+        else {
+          alert('API Call failed, try again! / No more posts!')
+          console.log("API result: " + JSON.stringify(result))
+          document.title = "HiveSharer - New";
+        }
+      }
+    });
+  } else {
+    let page_num = Number(loadMoreClicks)+1
+    document.getElementById('load').innerHTML = ''
+    $.ajax({
+      url: '/api/posts?page='+page_num,
+      contentType: "application/json",
+      dataType: 'json',
+      success: function(result){
+        //console.log("API result: " + JSON.stringify(result))
+        if(JSON.stringify(result) != '{"success":false}') {
+          //sort array by time of creation, new on the top
+          var sorted = result.sort((a,b)=> parseFloat(b.time) - parseFloat(a.time))
+          for(i=0;i<result.length;i++){
+            var {success, background_image, profile_image, time, link, author, id, title, description, votes, comments} = sorted[i]
+            var html = `<div class="plx-card silver">
+              <div class="pxc-bg" style="background-image:url('${background_image}')"></div>
+              <div class="pxc-avatar"><a href='/profile?account=${author}'><img src="${profile_image}" /></a></div>
+              <div class="pxc-subcard">
+                  <div class="pxc-title"><i class="fas fa-hand-holding-usd fa-border" onclick='tip("${link}", "${author}")'></i> <i class="fas fa-arrow-up fa-border" onclick=submitVote("${id}")></i> <a class='underline' onclick='displayPost("${background_image}", "${profile_image}", "${time}", "${link}", "${author}", "${id}", "${title}", "${description}", "${votes}", "${comments}")'>${title}</a></div>
+                  <div class="pxc-sub"><a href='/profile?account=${author}'>@${author}</a> - ${description}</div>
+                <div class="bottom-row">
+                  <a href='${link}' class='button1'>${link}</a>  &nbsp - ${votes} Votes - ${comments} Comments -&nbsp <a onclick="displayTime('${time}')"> ${moment.unix(Number(time) / 1000).fromNow()}</a>
+                </div>
+              </div>
+            </div>`
+            document.getElementById('display').innerHTML += html
+            let load_button = `<center><button class="profile-card__button button--orange" onclick="loadMore('${page}')">Load More</button></center>`
+            document.getElementById('load').innerHTML = load_button
+            loadMoreClicks += 1
+          }
+          document.getElementById("loaders").remove();
+          document.title = "HiveSharer - New";
+        }
+        else {
+          alert('API Call failed, try again! / No more posts!')
+          console.log("API result: " + JSON.stringify(result))
+          document.title = "HiveSharer - New";
+        }
+      }
+    });
+  }
 }
 
 function displayTime(time){
