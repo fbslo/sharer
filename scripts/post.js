@@ -19,9 +19,9 @@ module.exports = {
             if(err) console.log('Error checking for duplicate posts!')
             else {
               if(result.length == '0'){
-                console.log('Post is duplicated! ID: ' + json.id)
-              } else {
                 insertIntoDatabase(data, json)
+              } else {
+                console.log('Post is duplicated! ID: ' + json.id)
               }
             }
           })
