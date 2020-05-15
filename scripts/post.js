@@ -14,7 +14,17 @@ module.exports = {
         if(data.required_posting_auths != json.author){
           console.log('Author is not the same as poster!')
         } else{
-          insertIntoDatabase(data, json)
+          var values = [json.author, json.id]
+          con.query('SELECT * FROM posts WHERE author = ? AND id = ?', values, (err, result) => {
+            if(err) console.log('Error checking for duplicate posts!')
+            else {
+              if(result.length == '0'){
+                console.log('Post is duplicated! ID: ' + json.id)
+              } else {
+                insertIntoDatabase(data, json)
+              }
+            }
+          })
         }
       }
     }
