@@ -10,7 +10,7 @@
     "@hiveio/hive-js": "^0.1.0",
     "body-parser": "^1.19.0",
     "ejs": "^3.0.2",
-    "express": "^4.17.1",
+    "express": "^4.17.3",
     "link-preview-node": "^1.0.4",
     "mysql": "^2.18.1",
     "xss": "^1.0.6"
